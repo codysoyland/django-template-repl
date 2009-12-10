@@ -6,7 +6,7 @@ def read(fname):
 
 setup(
     name='django-template-repl',
-    version='0.1.0',
+    version='0.1',
     description="A readline shell for the Django template language.",
     long_description=read('README'),
     author='Cody Soyland',
