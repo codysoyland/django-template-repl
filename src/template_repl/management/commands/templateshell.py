@@ -8,12 +8,15 @@ from template_repl.repl import setup_readline_history, run_shell
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('-u', '--url', dest='url', help='Preload context from given URL (just the path, such as "/admin/").', default=None),
-        make_option('-c', '--context', dest='context', help='Supply context as dictionary. Note: This gets evaled.', default={}),
+        make_option('-c', '--context', dest='context', help='Supply context as dictionary. Note: This gets evaled.', default=None),
     )
     help = 'Shell to interact with the template language. Context can be loaded by passing a URL with -u.'
 
     def handle(self, url, context, *args, **kwargs):
-        context_dict = eval(context)
+        if context:
+            context_dict = eval(context)
+        else:
+            context_dict = {}
         context = Context(context_dict)
         if url is not None:
             setup_test_environment()
