@@ -1,20 +1,21 @@
 from django.core.management.base import BaseCommand
-from template_repl.repl import setup_readline_history, run_shell
-from optparse import make_option
+from django.test.utils import ContextList, setup_test_environment
 from django.test.client import Client
-from django.test.utils import ContextList
 from django.template.context import Context
+from optparse import make_option
+from template_repl.repl import setup_readline_history, run_shell
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
-        make_option("-u", "--url", dest="url", help='Preloads context from a given URL.', default=None),
+        make_option('-u', '--url', dest='url', help='Preload context from given URL (just the path, such as "/admin/").', default=None),
+        make_option('-c', '--context', dest='context', help='Supply context as dictionary. Note: This gets evaled.', default={}),
     )
     help = 'Shell to interact with the template language. Context can be loaded by passing a URL with -u.'
 
-    def handle(self, url, *args, **kwargs):
-        context = Context()
+    def handle(self, url, context, *args, **kwargs):
+        context_dict = eval(context)
+        context = Context(context_dict)
         if url is not None:
-            from django.test.utils import setup_test_environment
             setup_test_environment()
             client = Client()
             response = client.get(url)
