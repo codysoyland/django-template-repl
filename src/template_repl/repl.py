@@ -26,6 +26,7 @@ def input_node_generator(prompt='>>> ', leading_tokens=None, input_source=raw_in
     input = False
     while not input:
         input = input_source(prompt)
+    input = input + '\n'
     tokens = Lexer(input, None).tokenize()
     if leading_tokens:
         tokens = leading_tokens + tokens
