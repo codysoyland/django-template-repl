@@ -1,6 +1,6 @@
 django-template-repl is a readline shell for the Django template language.
-It is similar to a cpython shell but it interprets template code instead of
-python. It can be invoked either as a management comment or within another
+It is similar to a CPython shell but it interprets template code instead of
+Python. It can be invoked either as a management comment or within another
 template for debugging.
 
 To install, add 'template_repl' to your settings.INSTALLED_APPS.
@@ -8,6 +8,9 @@ To install, add 'template_repl' to your settings.INSTALLED_APPS.
 The management command gives you quick access to the shell:
     python manage.py templateshell
 
-Or, add this to your template and it will create a REPL that assumes the
-context of the caller template. This is sort of like "PDB for templates":
+You can pass a url to the management command to assume the context of a specific location:
+    python manage.py templateshell -u /admin/foo/bar/
+
+Or, use the repl templatetag and it will create a REPL that assumes the
+context of the caller template. This is basically "PDB for templates":
     {% load repl %}{% repl %}
