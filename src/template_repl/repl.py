@@ -12,7 +12,6 @@ def run_shell(context=Context()):
         try:
             for node in input_node_generator():
                 sys.stdout.write(node.render(context))
-            print
         except KeyboardInterrupt:
             goodbye()
             break
