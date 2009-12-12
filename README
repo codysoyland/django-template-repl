@@ -19,6 +19,32 @@ an example of an interactive session:
     FOO
     >>>
 
+The templateshell management command also has a --pdb option to allow you to load
+the context into a namespace and start a PDB debugger shell. This works in conjunction
+with the -u (--url) and -c (--context) commands. It also provides a "vars" list that
+shows the names of the context variables:
+    $ python manage.py templateshell -u /admin/ --pdb
+    ...
+    ipdb> vars
+    Out[0]:
+    ['app_path',
+     'error_message',
+     'root_path',
+     'title',
+     'MEDIA_URL',
+     'LANGUAGES',
+     'LANGUAGE_BIDI',
+     'LANGUAGE_CODE',
+     'perms',
+     'messages',
+     'user']
+    ipdb> print user
+    AnonymousUser
+
 In addition, you can use the repl templatetag which creates a REPL that assumes the
 context of the caller template. This is basically "PDB for templates":
     {% load repl %}{% repl %}
+
+You can also start a real PDB shell using the same tag by giving it a second argument
+of "pdb". This loads the contex into the PDB namespace:
+    {% load repl %}{% repl pdb %}
