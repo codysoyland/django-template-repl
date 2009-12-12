@@ -4,6 +4,7 @@ from django.test.client import Client
 from django.template.context import Context
 from optparse import make_option
 from template_repl.repl import setup_readline_history, run_shell
+from template_repl.utils import pdb_with_context
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -36,15 +37,3 @@ class Command(BaseCommand):
         else:
             setup_readline_history()
             run_shell(context)
-
-def pdb_with_context(context):
-    vars = []
-    for context_dict in context.dicts:
-        for k, v in context_dict.items():
-            vars.append(k)
-            locals()[k] = v
-    try:
-        import ipdb as pdb
-    except ImportError:
-        import pdb
-    pdb.set_trace()
