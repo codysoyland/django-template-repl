@@ -35,7 +35,7 @@ def input_node_generator(prompt='>>> ', leading_tokens=None, input_source=raw_in
             yield node
     except TemplateSyntaxError, e:
         if e.args[0].startswith('Unclosed tags'):
-            for node in input_node_generator('... ', initial_tokens):
+            for node in input_node_generator('... ', initial_tokens, input_source):
                 yield node
         else:
             raise
