@@ -7,19 +7,15 @@ from copy import deepcopy
 from django.template import Parser, Lexer, Context, TemplateSyntaxError
 
 def run_shell(context=Context()):
-    goodbye = lambda: sys.stderr.write('\nkthxbai!\n')
     while True:
         try:
             for node in input_node_generator():
                 sys.stdout.write(node.render(context))
-        except KeyboardInterrupt:
-            goodbye()
-            break
-        except EOFError:
-            goodbye()
+        except (KeyboardInterrupt, EOFError):
             break
         except Exception, e:
             traceback.print_exc()
+    sys.stderr.write('\nkthxbai!\n')
 
 def input_node_generator(prompt='>>> ', leading_tokens=None, input_source=raw_input):
     input = False
