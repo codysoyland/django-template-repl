@@ -7,9 +7,10 @@ from copy import deepcopy
 from django.template import Parser, Lexer, Context, TemplateSyntaxError
 
 def run_shell(context=Context()):
+    parser = Parser([])
     while True:
         try:
-            for node in input_node_generator():
+            for node in input_node_generator(parser=parser):
                 sys.stdout.write(node.render(context))
         except (KeyboardInterrupt, EOFError):
             break
@@ -17,7 +18,9 @@ def run_shell(context=Context()):
             traceback.print_exc()
     sys.stderr.write('\nkthxbai!\n')
 
-def input_node_generator(prompt='>>> ', leading_tokens=None, input_source=raw_input):
+def input_node_generator(prompt='>>> ', leading_tokens=None, input_source=raw_input, parser=None):
+    if parser is None:
+        parser = Parser([])
     input = False
     while not input:
         input = input_source(prompt)
@@ -27,11 +30,12 @@ def input_node_generator(prompt='>>> ', leading_tokens=None, input_source=raw_in
         tokens = leading_tokens + tokens
     initial_tokens = deepcopy(tokens)
     try:
-        for node in Parser(tokens).parse():
+        parser.tokens = tokens
+        for node in parser.parse():
             yield node
     except TemplateSyntaxError, e:
         if e.args[0].startswith('Unclosed tags'):
-            for node in input_node_generator('... ', initial_tokens, input_source):
+            for node in input_node_generator('... ', initial_tokens, input_source, parser):
                 yield node
         else:
             raise
