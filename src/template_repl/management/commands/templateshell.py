@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.test.utils import ContextList, setup_test_environment
+from django.test.utils import setup_test_environment
 from django.test.client import Client
 from django.template.context import Context
 from optparse import make_option
@@ -29,9 +29,17 @@ class Command(BaseCommand):
             else:
                 if isinstance(response.context, Context):
                     context = response.context
-                elif isinstance(response.context, ContextList):
-                    # TODO: probably should try to merge all contexts
+                elif type(response.context) == list:
                     context = response.context[0]
+                else:
+                    try:
+                        from django.test.utils import ContextList
+                    except ImportError:
+                        pass
+                    else:
+                        if isinstance(response.context, ContextList):
+                            # TODO: probably should try to merge all contexts
+                            context = response.context[0]
         if use_pdb:
             pdb_with_context(context)
         else:
