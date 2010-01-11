@@ -1,22 +1,19 @@
 import unittest
-from template_repl.repl import input_node_generator
+from template_repl.repl import TemplateREPL
 from django.template import Context
+from StringIO import StringIO
 
 # Very basic tests here. Need more!!!
-
-def mock_interaction_parser(commands):
-    def mock_raw_input(prompt):
-        try:
-            return commands.pop(0)
-        except IndexError:
-            raise Exception('raw_input called more than expected')
-    return input_node_generator(input_source=mock_raw_input)
 
 def mock_interaction(commands, context={}):
     context = Context(context)
     output = ''
-    for node in mock_interaction_parser(commands):
-        output += node.render(context)
+    output_buffer = StringIO()
+    console = TemplateREPL(output=output_buffer, context=context)
+    for command in commands:
+        console.push(command)
+    output_buffer.seek(0)
+    output = output_buffer.read()
     return output
 
 class TestREPL(unittest.TestCase):
