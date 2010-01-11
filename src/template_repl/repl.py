@@ -14,6 +14,8 @@ class TemplateREPL(code.InteractiveConsole):
         code.InteractiveConsole.__init__(self)
 
     def runsource(self, source, filename="<input>", symbol="single"):
+        if not source:
+            return False
         tokens = Lexer(source, None).tokenize()
         self.parser.tokens = tokens
         nodes = []
@@ -32,7 +34,8 @@ class TemplateREPL(code.InteractiveConsole):
             return False
         else:
             for node in nodes:
-                self.output.write('%s\n' % (node.render(self.context),))
+                self.output.write('%s' % (node.render(self.context),))
+            self.output.write('\n')
             return False
 
 def run_shell(context=Context()):
