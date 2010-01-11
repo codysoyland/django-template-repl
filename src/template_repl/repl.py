@@ -49,6 +49,3 @@ def setup_readline_history():
 
     # register callback to write history file when exiting
     atexit.register(lambda: readline.write_history_file(history_path))
-
-if __name__ == "__main__":
-    main()
