@@ -167,7 +167,7 @@ class TemplateREPL(code.InteractiveConsole, object):
 def run_shell(context=Context()):
     setup_readline_history()
     console = TemplateREPL(context=context)
-    console.interact('django-template-repl %s' % get_version())
+    console.interact('\033[92mdjango-template-repl %s\033[0m' % get_version())
     sys.stderr.write('\nkthxbai!\n')
 
 def setup_readline_history():
