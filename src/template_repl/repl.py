@@ -171,7 +171,7 @@ def run_shell(context=Context()):
     sys.stderr.write('\nkthxbai!\n')
 
 def setup_readline_history():
-    history_path = os.path.join(os.getenv('HOME'), '.django-template-repl-history')
+    history_path = os.path.expanduser('~/.django-template-repl-history')
 
     # load history file
     if os.path.exists(history_path):
