@@ -1,7 +1,6 @@
 import re
 import os
 import sys
-import atexit
 import readline
 import code
 from django.template import Parser, Lexer, Context, TemplateSyntaxError, TOKEN_TEXT
@@ -164,18 +163,10 @@ class TemplateREPL(code.InteractiveConsole, object):
 
         return output
 
-def run_shell(context=Context()):
-    setup_readline_history()
+def run_shell(context=Context(), history_file=os.path.expanduser('~/.django-template-repl-history')):
+    if os.path.exists(history_file):
+        readline.read_history_file(history_file)
     console = TemplateREPL(context=context)
     console.interact('\033[92mdjango-template-repl %s\033[0m' % get_version())
     sys.stderr.write('\nkthxbai!\n')
-
-def setup_readline_history():
-    history_path = os.path.expanduser('~/.django-template-repl-history')
-
-    # load history file
-    if os.path.exists(history_path):
-        readline.read_history_file(history_path)
-
-    # register callback to write history file when exiting
-    atexit.register(lambda: readline.write_history_file(history_path))
+    readline.write_history_file(history_file)

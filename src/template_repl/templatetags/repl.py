@@ -1,4 +1,4 @@
-from template_repl.repl import setup_readline_history, run_shell
+from template_repl.repl import run_shell
 from django.template import Node, Library
 from template_repl.utils import pdb_with_context
 from django.template import TemplateSyntaxError
@@ -13,7 +13,6 @@ class REPLNode(Node):
         if self.use_pdb:
             pdb_with_context(context)
         else:
-            setup_readline_history()
             run_shell(context)
         return ''
 

@@ -3,7 +3,7 @@ from django.test.utils import setup_test_environment
 from django.test.client import Client
 from django.template.context import Context
 from optparse import make_option
-from template_repl.repl import setup_readline_history, run_shell
+from template_repl.repl import run_shell
 from template_repl.utils import pdb_with_context
 
 class Command(BaseCommand):
@@ -43,5 +43,4 @@ class Command(BaseCommand):
         if use_pdb:
             pdb_with_context(context)
         else:
-            setup_readline_history()
             run_shell(context)
