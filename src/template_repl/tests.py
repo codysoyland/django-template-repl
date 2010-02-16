@@ -40,18 +40,18 @@ class TestCompletion(TestCase):
 
     def assertExactCompletion(self, text, completion):
         """Assert set in `completion` to be identical to completion set"""
-        matches = self.repl.get_completion_matches(text)
+        matches = self.repl.completer.get_completion_matches(text)
         self.assertEqual(set(matches), set(completion))
 
     def assertInCompletion(self, text, completion):
         """Assert all items in `completion` are in the completion set"""
-        matches = self.repl.get_completion_matches(text)
+        matches = self.repl.completer.get_completion_matches(text)
         for item in completion:
             self.assert_(item in matches)
 
     def assertNonCompletion(self, text, completion):
         """Assert all items in `completion` are not in the completion set"""
-        matches = self.repl.get_completion_matches(text)
+        matches = self.repl.completer.get_completion_matches(text)
         for item in completion:
             self.assert_(item not in matches)
 
@@ -74,17 +74,17 @@ class TestCompletion(TestCase):
         "ppp" (Prefix, Pivot, and Partial) for a given input
         """
         self.assertEqual(
-            self.repl._get_completion_ppp('{{'),
+            self.repl.completer._get_completion_ppp('{{'),
             ('{', '{', ''))
 
         self.assertEqual(
-            self.repl._get_completion_ppp('{{ var }}{% get_'),
+            self.repl.completer._get_completion_ppp('{{ var }}{% get_'),
             ('{{ var }}{', '%', ' get_'))
 
         self.assertEqual(
-            self.repl._get_completion_ppp('{% tag %}{{ this|m'),
+            self.repl.completer._get_completion_ppp('{% tag %}{{ this|m'),
             ('{% tag %}{{ this', '|', 'm'))
 
         self.assertEqual(
-            self.repl._get_completion_ppp('{{ this|m:'),
+            self.repl.completer._get_completion_ppp('{{ this|m:'),
             ('{{ this|m', ':', ''))

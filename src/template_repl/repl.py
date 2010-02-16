@@ -1,128 +1,46 @@
 import re
-import os
 import sys
-import readline
 import code
-from django.template import Parser, Lexer, Context, TemplateSyntaxError, TOKEN_TEXT
+import readline
+from django.template import Parser, Lexer, Context, TemplateSyntaxError
 from template_repl import get_version
-
-class ExitREPL(Exception):
-    pass
+from template_repl.completion import Completer
 
 class TemplateREPL(code.InteractiveConsole, object):
     def __init__(self, parser=None, context=None, output=None):
+        """
+        The template REPL object has a single parser and context instance
+        that persist for the length of the shell session.
+        """
+        super(TemplateREPL, self).__init__()
+
         self.context = context or Context()
         self.parser = parser or Parser([])
         self.output = output or sys.stdout
-        self.completion_matches = []
-
-        code.InteractiveConsole.__init__(self)
-
-    def _get_completion_ppp(self, text):
-        """
-        Return tuple containing
-            - `prefix`
-            - `pivot`
-            - `partial`
-        Eg:
-            If text is '{{ var }}{% get_', the output is:
-            ('{{ var }}{', '%', ' get_')
-
-        How it works:
-        1. Tokenize text, add first n-1 tokens to "prefix".
-        2. Split on final "|%{:". Call it "pivot".
-        3. Any text after pivot is called the "partial".
-            -"Partial" means any completion must start with it.
-        4. Text prior to the pivot but after the first n-1 tokens
-           is appended to the prefix.
-
-        Completion handlers are chosen based on pivot character:
-            | - filter
-            % - tag
-            { - variable
-            : - variable
-        """
-        if len(text) == 0:
-            return ('', '', '')
-
-        prefix = ''
-        partial = ''
-        pivot = ''
-
-        tokens = Lexer(text, None).tokenize()
-
-        if tokens[-1].token_type != TOKEN_TEXT:
-            return (text, '', '')
-
-        prefix_tokens = tokens[:-1]
-        working_area = tokens[-1].contents
-
-        prefix = text[:-len(working_area)]
-
-        # Iterate backwards through string, finding the first
-        # occurrence of any of the chars "|%{:". Call it the pivot.
-        for index, char in list(enumerate(working_area))[::-1]:
-            if char == ' ':
-                if ' ' in working_area[:index]:
-                    pivot = char
-                    break
-            if char in '|%{:':
-                pivot = char
-                break
-
-        # No pivot was found
-        if len(pivot) == 0:
-            return (text, '', '')
-
-        pieces = working_area.split(pivot)
-
-        prefix += pivot.join(pieces[:-1])
-        partial = pieces[-1]
-
-        return (prefix, pivot, partial)
-
-    def get_completion_matches(self, text):
-        """
-        Return list of completion matches given the input `text`.
-        """
-        vars = self.context.dicts[0].keys()
-        filters = self.parser.filters.keys()
-        tags = self.parser.tags.keys()
-        tags.extend(['endif', 'endifequal', 'endfor', 'endwhile', 'endfilter', 'endcomment'])
-
-        (prefix, pivot, partial) = self._get_completion_ppp(text)
-
-        if pivot == '{':
-            possibilities = [' %s' % var for var in vars]
-        elif pivot in ' :':
-            possibilities = ['%s' % var for var in vars]
-        elif pivot == '%':
-            possibilities = [' %s' % tag for tag in tags]
-        elif pivot == '|':
-            possibilities = ['%s' % filt for filt in filters]
-
-        # Filter out possibilites that do not start with the text in the partial
-        possibilities = filter(
-            lambda poss: poss.startswith(partial),
-            possibilities)
-
-        return [(prefix + pivot + poss) for poss in possibilities]
-
-    def complete(self, text, state):
-        if not self.completion_matches and state == 0:
-            self.completion_matches = self.get_completion_matches(text)
-        try:
-            return self.completion_matches.pop()
-        except IndexError:
-            return None
+        self.completer = Completer(context = self.context, parser = self.parser)
 
     def interact(self, banner=None):
         try:
-            code.InteractiveConsole.interact(self, banner)
+            super(TemplateREPL, self).interact(banner)
         except ExitREPL:
+            # Fail silently. This exception is just meant to break
+            # out of the interact() call.
             pass
 
     def runsource(self, source, filename="<input>", symbol="single"):
+        """
+        readline calls this method with the current source buffer. This method
+        can return True to instruct readline to capture another line of input
+        using the "..." prompt or return False to tell readline to clear the
+        source buffer and capture a new phrase.
+
+        How it works:
+        1. Tokenize input.
+        2. Load parser with tokens.
+        3. Attempt to parse, loading a list with nodes.
+        4. If unclosed tag exception is raised, get more user input.
+        5. If everything went smoothly, print output, otherwise print exception.
+        """
         if source == 'exit':
             raise ExitREPL()
         if not source:
@@ -140,20 +58,27 @@ class TemplateREPL(code.InteractiveConsole, object):
                     return True
                 else:
                     raise
-        except:
-            self.showtraceback()
-            return False
-        else:
             for node in nodes:
                 self.output.write('%s' % (node.render(self.context),))
             self.output.write('\n')
             return False
+        except:
+            self.showtraceback()
+            return False
 
     def raw_input(self, prompt):
+        """
+        I'm overloading raw_input here so that I can swap out the completer
+        before and after each line of input. This is because the completer
+        is global. There might be a better way of doing this.
+
+        TODO: I think I need to do a similar hack to fix readline history,
+        as history currently gets munged between PDB and template-repl.
+        """
         orig_delims = readline.get_completer_delims()
         orig_completer = readline.get_completer()
 
-        readline.set_completer(self.complete)
+        readline.set_completer(self.completer.complete)
         readline.set_completer_delims('')
 
         output = super(TemplateREPL, self).raw_input(prompt)
@@ -163,10 +88,5 @@ class TemplateREPL(code.InteractiveConsole, object):
 
         return output
 
-def run_shell(context=Context(), history_file=os.path.expanduser('~/.django-template-repl-history')):
-    if os.path.exists(history_file):
-        readline.read_history_file(history_file)
-    console = TemplateREPL(context=context)
-    console.interact('\033[92mdjango-template-repl %s\033[0m' % get_version())
-    sys.stderr.write('\nkthxbai!\n')
-    readline.write_history_file(history_file)
+class ExitREPL(Exception):
+    pass

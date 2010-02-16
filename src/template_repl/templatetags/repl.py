@@ -1,4 +1,4 @@
-from template_repl.repl import run_shell
+from template_repl import run_shell
 from django.template import Node, Library
 from template_repl.utils import pdb_with_context
 from django.template import TemplateSyntaxError
