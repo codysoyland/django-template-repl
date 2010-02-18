@@ -50,7 +50,10 @@ class Completer(object):
         """
         Return list of completion matches given the input `text`.
         """
-        vars = self.context.dicts[0].keys()
+        vars = set()
+        for dct in self.context.dicts:
+            vars.update(dct.keys())
+        vars = list(vars)
         filters = self.parser.filters.keys()
         tags = self.parser.tags.keys()
         tags.extend(['endif', 'endifequal', 'endfor', 'endwhile', 'endfilter', 'endcomment'])
