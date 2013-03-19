@@ -56,8 +56,9 @@ class TestCompletion(TestCase):
             self.assert_(item not in matches)
 
     def test_variables(self):
-        self.assertExactCompletion('{{', ['{{ food', '{{ folly', '{{ banana'])
-        self.assertExactCompletion('{{ ', ['{{ food', '{{ folly', '{{ banana'])
+        self.assertExactCompletion('{{', ['{{ food', '{{ folly', '{{ banana', '{{ True', '{{ False', '{{ None'])
+        self.assertExactCompletion('{{ ', ['{{ food', '{{ folly', '{{ banana', '{{ True', '{{ False', '{{ None'])
+        self.assertExactCompletion('{{ T', ['{{ True'])
         self.assertExactCompletion('{{ fo', ['{{ food', '{{ folly'])
         self.assertExactCompletion('{{ foo', ['{{ food'])
 
