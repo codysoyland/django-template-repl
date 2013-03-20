@@ -52,7 +52,7 @@ class TemplateREPL(code.InteractiveConsole, object):
             try:
                 for node in self.parser.parse():
                     nodes.append(node)
-            except TemplateSyntaxError, e:
+            except TemplateSyntaxError as e:
                 if e.args[0].startswith('Unclosed tags'):
                     # inside block, so ask for more input
                     return True

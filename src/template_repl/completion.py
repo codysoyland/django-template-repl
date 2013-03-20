@@ -55,7 +55,7 @@ class Completer(object):
             vars.update(dct.keys())
         vars = list(vars)
         filters = self.parser.filters.keys()
-        tags = self.parser.tags.keys()
+        tags = list(self.parser.tags.keys())
         tags.extend(['endif', 'endifequal', 'endfor', 'endwhile', 'endfilter', 'endcomment'])
 
         (prefix, pivot, partial) = self._get_completion_ppp(text)

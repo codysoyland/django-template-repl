@@ -1,7 +1,7 @@
 from template_repl.repl import TemplateREPL
 from django.template import Context
 from django.test import TestCase
-from StringIO import StringIO
+from io import StringIO
 
 def mock_interaction(commands, context={}):
     context = Context(context)
